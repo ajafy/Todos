@@ -123,7 +123,7 @@ export default function SignForm() {
       <div className="space-y-10">
         <Image src={logo} alt="Logo" width={224} height={219} priority />
         <TypingAnimation
-          text=" Matchdd."
+          text=" Tasks"
           duration={300}
           isSignIn={isSignIn}
         ></TypingAnimation>

@@ -45,7 +45,7 @@ export default function TypingAnimation({
   return (
     <h1 className="text-center">
       <span className="font-raleway text-2xl sm:text-4xl font-bold w-auto leading-[5rem] tracking-[-0.02em] drop-shadow-sm">
-        Find Your Skills
+      Simplify Your Daily
       </span>
       {!isSignIn && (
         <span className="font-raleway text-palette-primary text-2xl sm:text-4xl font-bold w-auto leading-[5rem] tracking-[-0.02em] drop-shadow-sm">
