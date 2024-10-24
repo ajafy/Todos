@@ -6,15 +6,14 @@ export enum genderType {
 }
 
 export interface signupFormInput {
-  firstname: string;
-  lastname: string;
+  fullname: string;
   username: string;
   gender: genderType;
   email: string;
-  hashed_password: string;
+  password: string;
 }
 
 export interface signinFormInput {
   username: string;
-  hashed_password: string;
+  password: string;
 }

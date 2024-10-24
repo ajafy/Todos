@@ -24,50 +24,48 @@ export function DatePickerButton({
   onDateSelect: (date: Date | undefined) => void;
   value?: Date;
 }) {
-  const { register, setValue, watch, handleSubmit } = useForm<DateType>({
+  const { setValue, watch } = useForm<DateType>({
     defaultValues: {
       deadline: value,
     },
   });
 
-  const onSubmit = (data: DateType) => {
-    console.log(data);
-    if (data && data.deadline) onDateSelect(data.deadline);
-  };
+  const selectedDate = watch("deadline");
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "w-full pl-3 text-left font-normal",
-              !watch("deadline") && "text-muted-foreground"
-            )}
-          >
-            {watch("deadline") ? (
-              format(watch("deadline") as Date, "PPP")
-            ) : (
-              <span>Pick a date</span>
-            )}
-            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={watch("deadline")}
-            onSelect={(date) => setValue("deadline", date || undefined)}
-            disabled={(date) => {
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              return date.getTime() < today.getTime();
-            }}
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
-    </form>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full pl-3 text-left font-normal",
+            !selectedDate && "text-muted-foreground"
+          )}
+        >
+          {selectedDate ? (
+            format(selectedDate as Date, "PPP")
+          ) : (
+            <span>Pick a date</span>
+          )}
+          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={(date) => {
+            setValue("deadline", date || undefined);
+            onDateSelect(date || undefined);
+          }}
+          disabled={(date) => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return date.getTime() < today.getTime();
+          }}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
   );
 }

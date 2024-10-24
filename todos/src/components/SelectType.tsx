@@ -17,19 +17,39 @@ export function SelectType({
   setSelectedValue: (value: string) => void;
   selectedValue: string;
 }) {
-    let color:string = selectedValue === "TO DO" ? "text-palette-primary" : selectedValue === "ON GOING" ? "text-palette-onGoing" : "text-palette-done"
+  let color: string =
+    selectedValue === "TODO"
+      ? "text-palette-primary"
+      : selectedValue === "ONGOING"
+      ? "text-palette-onGoing"
+      : "text-palette-done";
   return (
     <Select value={selectedValue} onValueChange={setSelectedValue}>
-      <SelectTrigger className={`w-fit space-x-2 border-none shadow-none ${color} font-medium text-base`}>
+      <SelectTrigger
+        className={`w-fit space-x-2 border-none shadow-none ${color} font-medium text-base`}
+      >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectItem value="TO DO" className="text-palette-primary focus:text-palette-primary">
+          <SelectItem
+            value="TODO"
+            className="text-palette-primary focus:text-palette-primary"
+          >
             To Do
           </SelectItem>
-          <SelectItem value="ON GOING" className="text-palette-onGoing focus:text-palette-onGoing">On Going</SelectItem>
-          <SelectItem value="DONE" className="text-palette-done focus:text-palette-done">Done</SelectItem>
+          <SelectItem
+            value="ONGOING"
+            className="text-palette-onGoing focus:text-palette-onGoing"
+          >
+            On Going
+          </SelectItem>
+          <SelectItem
+            value="DONE"
+            className="text-palette-done focus:text-palette-done"
+          >
+            Done
+          </SelectItem>
         </SelectGroup>
       </SelectContent>
     </Select>
