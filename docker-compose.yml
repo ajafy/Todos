@@ -1,26 +1,21 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  mine:
+  app:
     build: .
     ports:
       - "3000:3000"
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "npm run migrate && npm run start"
-    env_file:
-      - .env.local
-    volumes:
-      - ./:/app
-      - ./node_modules:/app/node_modules
+    command: sh -c "npm run migrate && npm start"
 
   db:
     image: postgres:14
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: mine
+      POSTGRES_DB: nextjs_db
     ports:
       - "5432:5432"
     healthcheck:
@@ -37,5 +32,6 @@ services:
     ports:
       - "8000:8080"
     restart: unless-stopped
+
 volumes:
   db-data:
