@@ -13,7 +13,7 @@ import logo from "../../../public/logo.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Gender from "../../Personalcomponents/GenderSelect";
 import TypingAnimation from "../../Personalcomponents/typeAnimation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   LayoutListIcon,
   ListTodo,
@@ -25,99 +25,39 @@ import {
 
 import { useForm, SubmitHandler } from "react-hook-form";
 import { signupFormInput, signinFormInput } from "../_types/typeSign";
-import { useMutation } from "@tanstack/react-query";
-import { fetchSignin, fetchSignup } from "../_api/fetchSign";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { fetchSignup } from "../_api/fetchSign";
 import { useRouter } from "next/navigation";
 import { ButtonWithIcon } from "@/components/ButtonWithIcon";
 import { DatePickerButton } from "@/components/Calendar";
 import { PopoverInsert, PopoverUpdate } from "../../components/PopoverButton";
+import { useSession } from "next-auth/react";
+import { Todo, User } from "@prisma/client";
+import axios from "axios";
+import { useGlobalContext } from "@/Providers/GlobalContext";
+import { typeTodo } from "../_types/typeTodo";
 export default function SignForm() {
-  const [date, setDate] = useState<Date | undefined>();
-  const [taskName, settaskName] = useState<string>("Task name");
-  const [description, setDescription] = useState<string>(
-    "This is a sample description ."
-  );
-  const [selectedType, setSelectedType] = useState("TO DO");
+  const { user } = useGlobalContext();
 
-  const [isErrorSignup, setIsErrorSignup] = useState<boolean>(false);
-  const [errorSignup, setErrorSignup] = useState<string>("Something Wrong !");
-  const [isErrorSignin, setIsErrorSignin] = useState<boolean>(false);
-  const [errorSignin, setErrorSignin] = useState<string>("Something Wrong !");
-  const router = useRouter();
-  const {
-    register: registerSignup,
-    handleSubmit: handleSubmitSignup,
-    setValue,
-    reset: resetSignup,
-    resetField: resetFieldSignup,
-  } = useForm<signupFormInput>();
-  const {
-    register: registerSignin,
-    handleSubmit: handleSubmitSignin,
-    reset: resetSignin,
-    resetField: resetFieldSignin,
-  } = useForm<signinFormInput>();
-
-  const mutationSignup = useMutation({
-    mutationKey: ["signup"],
-    mutationFn: fetchSignup,
-  });
-  const mutationSignin = useMutation({
-    mutationKey: ["signin"],
-    mutationFn: fetchSignin,
-  });
-
-  const handleSignupSubmit: SubmitHandler<signupFormInput> = async (data) => {
-    setIsErrorSignup(false);
-    if (!data) {
-      setIsErrorSignup(true);
-      return;
-    }
-    if (!data.gender) {
-      console.log("Gender is Mandatory !");
-      setIsGender(true);
-      return;
-    }
-    mutationSignup.mutate(data, {
-      onError: (error) => console.log("error => ", error),
-      onSuccess: (data) => {
-        if (!data.data) {
-          setIsErrorSignup(true);
-          setErrorSignup(data.message);
-          return;
-        }
-        console.log(data);
-
-        resetSignup();
-        router.push("/profile");
-      },
-    });
+  const fetchTodosData = async (userId: string) => {
+    const response = await axios.get(`/api/todos/${userId}`);
+    return response.data;
   };
 
-  const handleSigninSubmit: SubmitHandler<signinFormInput> = async (data) => {
-    setIsErrorSignin(false);
-    if (!data) {
-      setIsErrorSignin(true);
+  const {
+    isPending: isPendingTodos,
+    isError: isErrorTodos,
+    data: dataTodos,
+    error: errorTodos,
+  } = useQuery({
+    queryKey: ["todos"],
+    queryFn: () => {
+      if (user) return fetchTodosData(user.id_user);
+      else console.log("fail");
       return;
-    }
-    mutationSignin.mutate(data, {
-      onError: (error) => console.log("error => ", error.message),
-      onSuccess: (data) => {
-        console.log(data);
-
-        if (!data.data) {
-          setIsErrorSignin(true);
-          setErrorSignin(data.message);
-          resetFieldSignin("hashed_password");
-          return;
-        }
-        let route: string = data.data.age ? "/{taskName}" : "/profile";
-        console.log(data);
-        resetSignin();
-        router.push(route);
-      },
-    });
-  };
+    },
+    enabled: !!user,
+  });
 
   return (
     <div className="w-full h-full justify-start lg:justify-center  px-8 flex space-x-10 lg:space-x-24 items-center min-w-[1600px] overflow-x-auto">
@@ -133,48 +73,53 @@ export default function SignForm() {
         border-palette-beige w-full h-[1117px] bg-palette-background flex flex-col items-center rounded-[40px] p-5 space-y-5"
         >
           <PopoverInsert
-            title="To Do"
+            type={"TODO"}
             bg="bg-palette-primary"
             text="text-palette-primary"
           />
 
           <div className="w-[80%] border-[0.5px] border-primary"></div>
           <div className="w-full h-full flex flex-col items-center overflow-y-auto p-5 space-y-5">
-            <div
-              className=" border border-solid 
-        border-palette-beige  w-full h-fit bg-palette-white flex flex-col rounded-[16px] p-4 lg-p-6 pl-10 space-y-5"
-            >
-              <BadgeXIcon className="flex self-end" />
-
-              <div className="text-palette-primary font-raleway font-bold text-xl">
-                {taskName}
-              </div>
-              <div className="flex space-x-3">
-                {date && (
-                  <CalendarClock className="text-palette-placeholder w-[20px] h-20px" />
-                )}
-
-                <div className="text-palette-placeholder font-raleway font-bold text-sm">
-                  {date &&
-                    date.getDay().toString() +
-                      " - " +
-                      date.getMonth().toString() +
-                      " - " +
-                      date.getFullYear().toString()}
-                </div>
-              </div>
-              <p className="font-raleway font-bold text-sm text-palette-black opacity-60">
-                {description}
-              </p>
-              <PopoverUpdate
-                bg="bg-palette-primary"
-                text="text-palette-primary"
-                type="TO DO"
-                descriptionData={description}
-                taskNameData={taskName}
-                dateData={date}
-              />
-            </div>
+            {dataTodos?.map(
+              (todo: Todo) =>
+                todo.type == "TODO" && (
+                  <div
+                    key={todo.id_todo}
+                    className="border border-solid border-palette-beige w-full h-fit bg-palette-white flex flex-col rounded-[16px] p-4 lg-p-6 pl-10 space-y-5"
+                  >
+                    <BadgeXIcon className="flex self-end" />
+                    <div className="text-palette-primary font-raleway font-bold text-xl">
+                      {todo.title}
+                    </div>
+                    <div className="flex space-x-3">
+                      {todo.due_at && (
+                        <CalendarClock className="text-palette-placeholder w-[20px] h-20px" />
+                      )}
+                      <div className="text-palette-placeholder font-raleway font-bold text-sm">
+                        {todo.due_at &&
+                          (() => {
+                            const dueDate = new Date(todo.due_at);
+                            return `${dueDate.getDate()} - ${
+                              dueDate.getMonth() + 1
+                            } - ${dueDate.getFullYear()}`;
+                          })()}
+                      </div>
+                    </div>
+                    <p className="font-raleway font-bold text-sm text-palette-black opacity-60">
+                      {todo.description}
+                    </p>
+                    <PopoverUpdate
+                      id={todo.id_todo}
+                      bg="bg-palette-primary"
+                      text="text-palette-primary"
+                      type={"TODO"}
+                      descriptionData={todo.description || ""}
+                      taskNameData={todo.title}
+                      dateData={todo.due_at}
+                    />
+                  </div>
+                )
+            )}
           </div>
         </div>
       </div>
@@ -191,47 +136,53 @@ export default function SignForm() {
         border-palette-beige w-full h-[1117px] bg-palette-background flex flex-col items-center rounded-[40px] p-5 space-y-5"
         >
           <PopoverInsert
-            title="On Going"
+            type={"ONGOING"}
             bg="bg-palette-onGoing"
             text="text-palette-onGoing"
           />
 
           <div className="w-[80%] border-[0.5px] border-primary"></div>
           <div className="w-full h-full flex flex-col items-center overflow-y-auto p-5 space-y-5">
-            <div
-              className=" border border-solid 
-        border-palette-beige  w-full h-fit bg-palette-white flex flex-col rounded-[16px] p-4 lg-p-6 pl-10 space-y-5"
-            >
-              <BadgeXIcon className="flex self-end" />
-
-              <div className="text-palette-onGoing font-raleway font-bold text-xl">
-                {taskName}
-              </div>
-              <div className="flex space-x-3">
-                {date && (
-                  <CalendarClock className="text-palette-placeholder w-[20px] h-20px" />
-                )}
-                <div className="text-palette-placeholder font-raleway font-bold text-sm">
-                  {date &&
-                    date.getDay().toString() +
-                      " - " +
-                      date.getMonth().toString() +
-                      " - " +
-                      date.getFullYear().toString()}
-                </div>
-              </div>
-              <p className="font-raleway font-bold text-sm text-palette-black opacity-60">
-                {description}
-              </p>
-              <PopoverUpdate
-                bg="bg-palette-onGoing"
-                text="text-palette-onGoing"
-                type="ON GOING"
-                descriptionData={description}
-                taskNameData={taskName}
-                dateData={date}
-              />
-            </div>
+            {dataTodos?.map(
+              (todo: Todo) =>
+                todo.type === "ONGOING" && (
+                  <div
+                    key={todo.id_todo}
+                    className="border border-solid border-palette-beige w-full h-fit bg-palette-white flex flex-col rounded-[16px] p-4 lg-p-6 pl-10 space-y-5"
+                  >
+                    <BadgeXIcon className="flex self-end" />
+                    <div className="text-palette-onGoing font-raleway font-bold text-xl">
+                      {todo.title}
+                    </div>
+                    <div className="flex space-x-3">
+                      {todo.due_at && (
+                        <CalendarClock className="text-palette-placeholder w-[20px] h-20px" />
+                      )}
+                      <div className="text-palette-placeholder font-raleway font-bold text-sm">
+                        {todo.due_at &&
+                          (() => {
+                            const dueDate = new Date(todo.due_at);
+                            return `${dueDate.getDate()} - ${
+                              dueDate.getMonth() + 1
+                            } - ${dueDate.getFullYear()}`;
+                          })()}
+                      </div>
+                    </div>
+                    <p className="font-raleway font-bold text-sm text-palette-black opacity-60">
+                      {todo.description}
+                    </p>
+                    <PopoverUpdate
+                      id={todo.id_todo}
+                      bg="bg-palette-onGoing"
+                      text="text-palette-onGoing"
+                      type={"ONGOING"}
+                      descriptionData={todo.description || ""}
+                      taskNameData={todo.title}
+                      dateData={todo.due_at}
+                    />
+                  </div>
+                )
+            )}
           </div>
         </div>
       </div>
@@ -248,47 +199,53 @@ export default function SignForm() {
         border-palette-beige w-full h-[1117px] bg-palette-background flex flex-col items-center rounded-[40px] p-5 space-y-5"
         >
           <PopoverInsert
-            title="Done"
+            type={"DONE"}
             bg="bg-palette-done"
             text="text-palette-done"
           />
 
           <div className="w-[80%] border-[0.5px] border-primary"></div>
           <div className="w-full h-full flex flex-col items-center overflow-y-auto p-5 space-y-5">
-            <div
-              className=" border border-solid 
-        border-palette-beige  w-full h-fit bg-palette-white flex flex-col rounded-[16px] p-4 lg-p-6 pl-10 space-y-5"
-            >
-              <BadgeXIcon className="flex self-end" />
-
-              <div className="text-palette-done font-raleway font-bold text-xl">
-                {taskName}
-              </div>
-              <div className="flex space-x-3">
-                {date && (
-                  <CalendarClock className="text-palette-placeholder w-[20px] h-20px" />
-                )}
-                <div className="text-palette-placeholder font-raleway font-bold text-sm">
-                  {date &&
-                    date.getDay().toString() +
-                      " - " +
-                      date.getMonth().toString() +
-                      " - " +
-                      date.getFullYear().toString()}
-                </div>
-              </div>
-              <p className="font-raleway font-bold text-sm text-palette-black opacity-60">
-                {description}
-              </p>
-              <PopoverUpdate
-                bg="bg-palette-done"
-                text="text-palette-done"
-                type="DONE"
-                descriptionData={description}
-                taskNameData={taskName}
-                dateData={date}
-              />
-            </div>
+            {dataTodos?.map(
+              (todo: Todo) =>
+                todo.type === "DONE" && (
+                  <div
+                    key={todo.id_todo}
+                    className="border border-solid border-palette-beige w-full h-fit bg-palette-white flex flex-col rounded-[16px] p-4 lg-p-6 pl-10 space-y-5"
+                  >
+                    <BadgeXIcon className="flex self-end" />
+                    <div className="text-palette-done font-raleway font-bold text-xl">
+                      {todo.title}
+                    </div>
+                    <div className="flex space-x-3">
+                      {todo.due_at && (
+                        <CalendarClock className="text-palette-placeholder w-[20px] h-20px" />
+                      )}
+                      <div className="text-palette-placeholder font-raleway font-bold text-sm">
+                        {todo.due_at &&
+                          (() => {
+                            const dueDate = new Date(todo.due_at);
+                            return `${dueDate.getDate()} - ${
+                              dueDate.getMonth() + 1
+                            } - ${dueDate.getFullYear()}`;
+                          })()}
+                      </div>
+                    </div>
+                    <p className="font-raleway font-bold text-sm text-palette-black opacity-60">
+                      {todo.description}
+                    </p>
+                    <PopoverUpdate
+                      id={todo.id_todo}
+                      bg="bg-palette-done"
+                      text="text-palette-done"
+                      type={"DONE"}
+                      descriptionData={todo.description || ""}
+                      taskNameData={todo.title}
+                      dateData={todo.due_at}
+                    />
+                  </div>
+                )
+            )}
           </div>
         </div>
       </div>

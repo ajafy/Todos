@@ -14,21 +14,25 @@ import logo from "../../public/logo.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Gender from "../Personalcomponents/GenderSelect";
 import TypingAnimation from "../Personalcomponents/typeAnimation";
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { signupFormInput, signinFormInput } from "./_types/typeSign";
 import { useMutation } from "@tanstack/react-query";
-import { fetchSignin, fetchSignup } from "./_api/fetchSign";
+import { fetchSignup } from "./_api/fetchSign";
+import { google, intra } from "@/components/oauth";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useGlobalContext } from "@/Providers/GlobalContext";
+
 export default function SignForm() {
+  const router = useRouter();
+  const { user } = useGlobalContext();
   const [isSignIn, setIsSignIn] = useState<boolean>(false);
   const [isGender, setIsGender] = useState<boolean>(false);
   const [isErrorSignup, setIsErrorSignup] = useState<boolean>(false);
   const [errorSignup, setErrorSignup] = useState<string>("Something Wrong !");
   const [isErrorSignin, setIsErrorSignin] = useState<boolean>(false);
   const [errorSignin, setErrorSignin] = useState<string>("Something Wrong !");
-  const router = useRouter();
   const {
     register: registerSignup,
     handleSubmit: handleSubmitSignup,
@@ -47,10 +51,6 @@ export default function SignForm() {
     mutationKey: ["signup"],
     mutationFn: fetchSignup,
   });
-  const mutationSignin = useMutation({
-    mutationKey: ["signin"],
-    mutationFn: fetchSignin,
-  });
 
   const handleSignupSubmit: SubmitHandler<signupFormInput> = async (data) => {
     setIsErrorSignup(false);
@@ -59,7 +59,6 @@ export default function SignForm() {
       return;
     }
     if (!data.gender) {
-      console.log("Gender is Mandatory !");
       setIsGender(true);
       return;
     }
@@ -71,10 +70,8 @@ export default function SignForm() {
           setErrorSignup(data.message);
           return;
         }
-        console.log(data);
-
         resetSignup();
-        router.push("/profile");
+        setActiveTab("signin");
       },
     });
   };
@@ -85,24 +82,30 @@ export default function SignForm() {
       setIsErrorSignin(true);
       return;
     }
-    mutationSignin.mutate(data, {
-      onError: (error) => console.log("error => ", error.message),
-      onSuccess: (data) => {
-        console.log(data);
+    try {
+      const username: string = data.username;
+      const password: string = data.password;
+      const result = await signIn("credentials", {
+        redirect: false,
+        username,
+        password,
+      });
 
-        if (!data.data) {
-          setIsErrorSignin(true);
-          setErrorSignin(data.message);
-          resetFieldSignin("hashed_password");
-          return;
-        }
-        let route: string = data.data.age ? "/discover" : "/profile";
-        console.log(data);
-        resetSignin();
-        router.push(route);
-      },
-    });
+      if (!result?.url) {
+        setIsErrorSignin(true);
+        setErrorSignin("Invalide Credentials !");
+        resetFieldSignin("password");
+        return;
+      }
+      router.push("/discover");
+    } catch (error) {
+      console.log(error);
+      setIsErrorSignin(true);
+      return;
+    }
   };
+
+  const [activeTab, setActiveTab] = useState("signup");
 
   return (
     <div className="w-screen h-screen lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] bg-palette-background">
@@ -120,6 +123,8 @@ export default function SignForm() {
           >
             <div className="text-center flex">
               <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
                 defaultValue="signup"
                 className="w-fit max-w-[340px] h-[600px] rounded-[40px]"
               >
@@ -149,40 +154,24 @@ export default function SignForm() {
                       </CardHeader>
                       <div className="space-y-5">
                         <div className="flex space-x-4 w-full ">
-                          <div className="">
+                          <div className="w-full">
                             <Label
-                              htmlFor="firstname"
+                              htmlFor="fullname"
                               className="flex font-inter font-medium text-sm sm:text-base leading-5 text-palette-black"
                             >
-                              First name
+                              Full name
                             </Label>
                             <Input
-                              id="firstname"
-                              placeholder="Mohammed"
+                              id="fullname"
+                              placeholder="Mohammed Mayaz"
                               className="border rounded-[40px]  border-solid border-palette-beige placeholder:text-palette-placeholder placeholder:font-inter placeholder:leading-5 placeholder:text-xs sm:placeholder:text-sm  placeholder:font-normal"
-                              {...registerSignup("firstname", {
-                                required: true,
-                              })}
-                            />
-                          </div>
-                          <div className="">
-                            <Label
-                              htmlFor="lastname"
-                              className="flex font-inter font-medium text-sm sm:text-base leading-5 text-palette-black"
-                            >
-                              Last name
-                            </Label>
-                            <Input
-                              id="lastname"
-                              placeholder="Mayaz"
-                              className="border rounded-[40px] border-solid border-palette-beige placeholder:text-palette-placeholder placeholder:font-inter placeholder:leading-5 placeholder:text-xs sm:placeholder:text-sm placeholder:font-normal"
-                              {...registerSignup("lastname", {
+                              {...registerSignup("fullname", {
                                 required: true,
                               })}
                             />
                           </div>
                         </div>
-                        <div className="flex space-x-4 w-full ">
+                        <div className="flex space-x-4 w-full">
                           <div className="w-[50%]">
                             <Label
                               htmlFor="username"
@@ -253,7 +242,7 @@ export default function SignForm() {
                             placeholder="•••••••••••"
                             className="border rounded-[40px] border-solid border-palette-beige placeholder:text-palette-placeholder placeholder:font-inter placeholder:leading-5  placeholder:text-xs sm:placeholder:text-sm placeholder:font-normal"
                             autoComplete="current-password"
-                            {...registerSignup("hashed_password", {
+                            {...registerSignup("password", {
                               required: true,
                             })}
                           />
@@ -282,7 +271,12 @@ export default function SignForm() {
                         </div>
 
                         <div className="flex justify-around items-center">
-                          <a onClick={() => console.log("hello 42")}>
+                          <a
+                            onClick={async () => {
+                              await intra();
+                              // router.push("/discover");
+                            }}
+                          >
                             <Image
                               src={logo42}
                               alt="42"
@@ -292,7 +286,7 @@ export default function SignForm() {
                               priority
                             />
                           </a>
-                          <a onClick={() => console.log("hello google")}>
+                          <a onClick={async () => await google()}>
                             <Image
                               src={logoGoogle}
                               alt="google"
@@ -318,7 +312,7 @@ export default function SignForm() {
                           Enter your username below to login to your account
                         </CardDescription>
                       </CardHeader>
-                      <div className="space-y-5">
+                      <div className="space-y-7">
                         <div className="w-full">
                           <Label
                             htmlFor="username"
@@ -349,7 +343,7 @@ export default function SignForm() {
                             placeholder="•••••••••••"
                             autoComplete="current-password"
                             className="border rounded-[40px] border-solid border-palette-beige placeholder:text-palette-placeholder placeholder:font-inter placeholder:leading-5  placeholder:text-xs sm:placeholder:text-sm placeholder:font-normal"
-                            {...registerSignin("hashed_password", {
+                            {...registerSignin("password", {
                               required: true,
                             })}
                             onChange={() => {
@@ -357,12 +351,6 @@ export default function SignForm() {
                             }}
                           />
                         </div>
-                        <Link
-                          href="/forgot-password"
-                          className="font-inter justify-end text-sm font-medium underline flex self-end pr-3"
-                        >
-                          Forgot your password?
-                        </Link>
 
                         <div className="flex justify-center items-center flex-col">
                           <Button
@@ -387,7 +375,7 @@ export default function SignForm() {
                         </div>
 
                         <div className="flex justify-around items-center">
-                          <a onClick={() => console.log("hello 42")}>
+                          <a onClick={async () => await intra()}>
                             <Image
                               src={logo42}
                               alt="42"
@@ -397,7 +385,7 @@ export default function SignForm() {
                               priority
                             />
                           </a>
-                          <a onClick={() => console.log("hello google")}>
+                          <a onClick={async () => await google()}>
                             <Image
                               src={logoGoogle}
                               alt="google"

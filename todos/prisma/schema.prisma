@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Type{
+  TODO
+  ONGOING
+  DONE
+}
+enum GenderType{
+  MALE
+  FEMALE
+}
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? 
+  access_token       String? 
+  expires_at         Int?    
+  token_type         String? 
+
+  user User @relation(fields: [userId], references: [id_user], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id_user], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Todo {
+  id_todo  String  @id @default(uuid())
+  title String
+  description String?
+  due_at DateTime @updatedAt 
+  type Type @default(TODO)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt 
+  id_user String
+  user User @relation(fields: [id_user], references: [id_user])
+}
+
+model User {
+  id_user String  @id @default(uuid())
+  username  String @unique
+  fullname  String?
+  gender GenderType @default(MALE)
+  email String @unique
+  image String?
+  password String?
+  todos   Todo[]
+  accounts Account[]
+  sessions Session[]
+}
