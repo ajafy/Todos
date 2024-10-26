@@ -5,16 +5,17 @@ import { DoorOpen } from "lucide-react";
 import { useGlobalContext } from "src/Providers/GlobalContext";
 import { signOut } from "next-auth/react";
 export default function Sidebar() {
-  const { user } = useGlobalContext();
+  const { user, isLoading } = useGlobalContext();
+
   return (
-    <div className="max-lg:w-[150px] lg:w-[200px]  xl:w-[262px]  h-screen flex flex-col items-center overflow-auto  gap-10">
-      <div className="w-full h-[137px] flex items-center justify-center">
+    <div className=" w-[262px]  h-screen flex flex-col items-center overflow-auto gap-10 max-lg:py-5">
+      <div className="w-full flex items-center justify-center">
         <Image
           src={"/todos.png"}
-          className="w-[60%] h-[137px] "
+          className="py-10"
           alt="picture logo"
-          height={100}
-          width={100}
+          height={150}
+          width={150}
         />
       </div>
       <div className="w-full h-full flex flex-col  items-center justify-between py-10">
@@ -37,12 +38,12 @@ export default function Sidebar() {
         </div>
 
         <div className="w-[90%] flex flex-col items-center gap-8">
-          <div className="w-[60%] border-[0.5px] border-primary "></div>
+          <div className="w-[80%] border-[0.5px] border-primary "></div>
           <button
-            onClick={() => signOut()}
-            className="w-[50%] flex gap-5"
+            onClick={() => signOut({ redirect: true, callbackUrl: "/" })}
+            className="flex gap-5"
           >
-            <div className="">
+            <div>
               <DoorOpen style={{ color: "#4a11eb" }} />
             </div>
             <span className="text-palette-description font-semibold">

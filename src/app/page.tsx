@@ -89,19 +89,6 @@ export default function SignForm() {
         password,
       });
 
-      console.log(result);
-
-      if (result?.ok) {
-        // Successful login, redirect to /discover
-        router.push("/discover");
-      } else {
-        // Handle login failure
-        console.log("........");
-
-        setIsErrorSignin(true);
-        setErrorSignin("Invalid Credentials!");
-        resetFieldSignin("password");
-      }
       if (!result?.url) {
         setIsErrorSignin(true);
         setErrorSignin("Invalide Credentials !");
@@ -121,7 +108,7 @@ export default function SignForm() {
   return (
     <div className="w-screen h-screen lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] bg-palette-background">
       <div className="space-y-10">
-        <Image src={logo} alt="Logo" width={224} height={219} priority />
+        <Image src={logo} alt="Logo" width={224} height={219} priority className="p-10" />
         <TypingAnimation
           text=" Tasks"
           duration={300}

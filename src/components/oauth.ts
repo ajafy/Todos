@@ -13,8 +13,6 @@ export const local = async ({ data }: { data: signinFormInput }) => {
     const username: string = data.username;
     const password: string = data.password;
     const result = await signIn("credentials", {
-      callbackUrl: "/discover",
-      redirectTo: "/",
       redirect: false,
       username,
       password,

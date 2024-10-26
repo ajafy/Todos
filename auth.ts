@@ -4,7 +4,6 @@ import Google from "next-auth/providers/google";
 import Intra from "next-auth/providers/42-school";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { JWT } from "./authType";
 
 const prisma = new PrismaClient();
 

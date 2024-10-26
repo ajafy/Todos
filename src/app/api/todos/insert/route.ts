@@ -19,6 +19,8 @@ async function handler(req: Request) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
       }
 
+      console.log(title, " ", id_user, " ", type);
+
       if (!title || !type || !id_user)
         return NextResponse.json(
           {

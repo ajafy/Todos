@@ -1,10 +1,7 @@
-import { Button } from "src/components/ui/button";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -27,11 +24,6 @@ export function SideBarSheet() {
           <SheetDescription></SheetDescription>
         </SheetHeader>
         <Sidebar></Sidebar>
-        <SheetFooter>
-          <SheetClose asChild>
-            <Button type="submit">Save changes</Button>
-          </SheetClose>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
