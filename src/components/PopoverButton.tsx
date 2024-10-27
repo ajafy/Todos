@@ -15,10 +15,7 @@ import { Textarea } from "./ui/textarea";
 import { SelectType } from "./SelectType";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTodo, updateTodo } from "src/app/_api/fetchTodos";
-import {
-  todoFormInsert,
-  todoFormUpdate,
-} from "src/app/_types/typeTodo";
+import { todoFormInsert, todoFormUpdate } from "src/app/_types/typeTodo";
 import { useGlobalContext } from "src/Providers/GlobalContext";
 
 interface FormData {
@@ -79,7 +76,7 @@ export function PopoverUpdate({
       id_todo,
     };
     mutationUpdate.mutate(updateData, {
-      onError: (error) => console.log("error => ", error),
+      onError: (error) => console.error("error => ", error),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["todos"] });
         setIsOpen(false);
@@ -186,7 +183,7 @@ export function PopoverInsert({
       id_user,
     };
     mutationCreate.mutate(createData, {
-      onError: (error) => console.log("error => ", error),
+      onError: (error) => console.error("error => ", error),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["todos"] });
         setIsOpen(false);

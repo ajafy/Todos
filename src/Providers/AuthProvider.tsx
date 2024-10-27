@@ -11,12 +11,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (status === "loading") return;
-    // if (session && pathname === "/") {
-    //   router.push("/discover");
-    // } else if (!session && pathname === "/discover") {
-    //   router.push("/");
-    // }
+    if (session && pathname === "/") {
+      router.push("/discover");
+    }
   }, [session, status, router, pathname]);
 
   if (status === "loading") {

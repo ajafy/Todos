@@ -21,3 +21,7 @@ export interface todoFormUpdate {
   id_user: string;
   id_todo: string;
 }
+export interface todoFormDelete {
+  id_user: string;
+  id_todo: string;
+}

@@ -6,27 +6,41 @@ import {
   BadgeXIcon,
   CalendarClock,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PopoverInsert, PopoverUpdate } from "../../components/PopoverButton";
 import { Todo } from "@prisma/client";
 import axios from "axios";
 import { useGlobalContext } from "src/Providers/GlobalContext";
+import { deleteTodo } from "../_api/fetchTodos";
 
 export default function SignForm() {
   const { user } = useGlobalContext();
+  const queryClient = useQueryClient();
 
   const fetchTodosData = async (userId: string) => {
     const response = await axios.get(`/api/todos/${userId}`);
     return response.data;
   };
 
-  const {
-    data: dataTodos,
-  } = useQuery({
+  const onSubmit = async (id_todo: string) => {
+    mutationDelete.mutate(id_todo, {
+      onError: (error) => console.error("error => ", error),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["todos"] });
+      },
+    });
+  };
+
+  const mutationDelete = useMutation({
+    mutationKey: ["deleteTodo"],
+    mutationFn: deleteTodo,
+  });
+
+  const { data: dataTodos } = useQuery({
     queryKey: ["todos"],
     queryFn: () => {
       if (user) return fetchTodosData(user.id_user);
-      else console.log("fail");
+      else console.error("Failed to Get Todos !");
       return;
     },
     enabled: !!user,
@@ -60,7 +74,12 @@ export default function SignForm() {
                     key={todo.id_todo}
                     className="border border-solid border-palette-beige w-full h-fit bg-palette-white flex flex-col rounded-[16px] p-4 lg-p-6 pl-10 space-y-5"
                   >
-                    <BadgeXIcon className="flex self-end" />
+                    <button
+                      onClick={() => onSubmit(todo.id_todo)}
+                      className={"w-fit h-fit flex self-end"}
+                    >
+                      <BadgeXIcon />
+                    </button>
                     <div className="text-palette-primary font-raleway font-bold text-xl">
                       {todo.title}
                     </div>
@@ -123,7 +142,12 @@ export default function SignForm() {
                     key={todo.id_todo}
                     className="border border-solid border-palette-beige w-full h-fit bg-palette-white flex flex-col rounded-[16px] p-4 lg-p-6 pl-10 space-y-5"
                   >
-                    <BadgeXIcon className="flex self-end" />
+                    <button
+                      onClick={() => onSubmit(todo.id_todo)}
+                      className={"w-fit h-fit flex self-end"}
+                    >
+                      <BadgeXIcon />
+                    </button>
                     <div className="text-palette-onGoing font-raleway font-bold text-xl">
                       {todo.title}
                     </div>
@@ -186,7 +210,12 @@ export default function SignForm() {
                     key={todo.id_todo}
                     className="border border-solid border-palette-beige w-full h-fit bg-palette-white flex flex-col rounded-[16px] p-4 lg-p-6 pl-10 space-y-5"
                   >
-                    <BadgeXIcon className="flex self-end" />
+                    <button
+                      onClick={() => onSubmit(todo.id_todo)}
+                      className={"w-fit h-fit flex self-end"}
+                    >
+                      <BadgeXIcon />
+                    </button>
                     <div className="text-palette-done font-raleway font-bold text-xl">
                       {todo.title}
                     </div>

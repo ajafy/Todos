@@ -6,8 +6,6 @@ import { Label } from "src/components/ui/label";
 
 import Image from "next/image";
 import bird from "../../public/bird.webp";
-import logo42 from "../../public/logo42.png";
-import logoGoogle from "../../public/logoGoogle.webp";
 import logo from "../../public/todos.png";
 import {
   Tabs,
@@ -22,11 +20,12 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { signupFormInput, signinFormInput } from "./_types/typeSign";
 import { useMutation } from "@tanstack/react-query";
 import { fetchSignup } from "./_api/fetchSign";
-import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SignForm() {
   const router = useRouter();
+
   const [isSignIn, setIsSignIn] = useState<boolean>(false);
   const [isGender, setIsGender] = useState<boolean>(false);
   const [isErrorSignup, setIsErrorSignup] = useState<boolean>(false);
@@ -61,7 +60,7 @@ export default function SignForm() {
       return;
     }
     mutationSignup.mutate(data, {
-      onError: (error) => console.log("error => ", error),
+      onError: (error) => console.error("error => ", error),
       onSuccess: (data) => {
         if (!data.data) {
           setIsErrorSignup(true);
@@ -97,7 +96,7 @@ export default function SignForm() {
       }
       router.push("/discover");
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setIsErrorSignin(true);
       return;
     }
@@ -107,8 +106,15 @@ export default function SignForm() {
 
   return (
     <div className="w-screen h-screen lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] bg-palette-background">
-      <div className="space-y-10">
-        <Image src={logo} alt="Logo" width={224} height={219} priority className="p-10" />
+      <div className="space-y-20">
+        <Image
+          src={logo}
+          alt="Logo"
+          width={224}
+          height={219}
+          priority
+          className="p-10"
+        />
         <TypingAnimation
           text=" Tasks"
           duration={300}
@@ -124,7 +130,7 @@ export default function SignForm() {
                 value={activeTab}
                 onValueChange={setActiveTab}
                 defaultValue="signup"
-                className="w-fit max-w-[340px] h-[600px] rounded-[40px]"
+                className="w-fit max-w-[340px] h-[500px] rounded-[40px]"
               >
                 <TabsList className="grid w-full grid-cols-2 bg-palette-background rounded-[40px]">
                   <TabsTrigger
@@ -259,53 +265,6 @@ export default function SignForm() {
                             </p>
                           )}
                         </div>
-
-                        <div className="flex justify-between items-center">
-                          <div className="w-[20%] border border-palette-placeholder opacity-40" />
-                          <p className="text-palette-description text-sm sm:text-base">
-                            Or Continue With
-                          </p>
-                          <div className="w-[20%] border border-palette-placeholder opacity-40" />
-                        </div>
-
-                        <div className="flex justify-around items-center">
-                          <a
-                          // onClick={async () => {
-                          //   const result = await signIn("42-school", {
-                          //     redirect: false,
-                          //   });
-
-                          //   if (result && result.ok) {
-                          //     // Successful login, redirect to /discover
-                          //     console.log(result);
-
-                          //     router.push("/discover");
-                          //   } else {
-                          //     // Handle login failure (optional)
-                          //     console.error("Sign-in failed:", result?.error);
-                          //   }
-                          // }}
-                          >
-                            <Image
-                              src={logo42}
-                              alt="42"
-                              width={68}
-                              height={68}
-                              className="rounded-full w-[48px] h-[48px] min-[320px]:w-[68px] min-[320px]:h-[68px] drop-shadow-md border border-solid bg-palette-background"
-                              priority
-                            />
-                          </a>
-                          {/* <a onClick={async () => await google()}> */}
-                          <Image
-                            src={logoGoogle}
-                            alt="google"
-                            width={68}
-                            height={68}
-                            className="rounded-full w-[48px] h-[48px] min-[320px]:w-[68px] min-[320px]:h-[68px] drop-shadow-md border border-solid bg-palette-background"
-                            priority
-                          />
-                          {/* </a> */}
-                        </div>
                       </div>
                     </Card>
                   </form>
@@ -321,7 +280,7 @@ export default function SignForm() {
                           Enter your username below to login to your account
                         </CardDescription>
                       </CardHeader>
-                      <div className="space-y-7">
+                      <div className="space-y-10">
                         <div className="w-full">
                           <Label
                             htmlFor="username"
@@ -373,37 +332,6 @@ export default function SignForm() {
                               {errorSignin}
                             </p>
                           )}
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <div className="w-[20%] border border-palette-placeholder opacity-40" />
-                          <p className="text-palette-description text-sm sm:text-base">
-                            Or Continue With
-                          </p>
-                          <div className="w-[20%] border border-palette-placeholder opacity-40" />
-                        </div>
-
-                        <div className="flex justify-around items-center">
-                          {/* <a onClick={async () => await intra()}> */}
-                          <Image
-                            src={logo42}
-                            alt="42"
-                            width={68}
-                            height={68}
-                            className="rounded-full w-[48px] h-[48px] min-[320px]:w-[68px] min-[320px]:h-[68px] drop-shadow-md border border-solid bg-palette-background"
-                            priority
-                          />
-                          {/* </a> */}
-                          {/* <a onClick={async () => await google()}> */}
-                          <Image
-                            src={logoGoogle}
-                            alt="google"
-                            width={68}
-                            height={68}
-                            className="rounded-full w-[48px] h-[48px] min-[320px]:w-[68px] min-[320px]:h-[68px] drop-shadow-md border border-solid bg-palette-background"
-                            priority
-                          />
-                          {/* </a> */}
                         </div>
                       </div>
                     </Card>

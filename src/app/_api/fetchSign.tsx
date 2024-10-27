@@ -9,6 +9,7 @@ export const fetchSignup = async (data: signupFormInput) => {
       data,
       { withCredentials: true }
     );
+
     return response.data;
   } catch (error) {
     throw new Error("Failed to Signup ! " + error);

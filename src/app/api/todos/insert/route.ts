@@ -19,8 +19,6 @@ async function handler(req: Request) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
       }
 
-      console.log(title, " ", id_user, " ", type);
-
       if (!title || !type || !id_user)
         return NextResponse.json(
           {
@@ -30,8 +28,6 @@ async function handler(req: Request) {
         );
 
       if (session.user?.id !== id_user) {
-        console.log("id_user = ", id_user, " | ", session.user?.id);
-
         return NextResponse.json({ message: "Forbidden" }, { status: 403 });
       }
 

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "migrate": "dotenv -e .env.local -- npx prisma migrate dev --name init --schema=prisma/schema.prisma",
+    "studio": "dotenv -e .env.local -- npx prisma studio --schema=prisma/schema.prisma",
     "generate": "dotenv -e .env.local -- npx prisma generate --schema=prisma/schema.prisma"
   },
   "dependencies": {

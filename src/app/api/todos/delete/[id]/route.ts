@@ -1,53 +1,32 @@
-import prisma from "../../prisma";
 import { NextResponse } from "next/server";
-import { todoFormUpdate } from "src/app/_types/typeTodo";
+import { PrismaClient } from "@prisma/client";
 import { auth } from "auth";
-import { Type } from "@prisma/client";
 
-async function handler(req: Request) {
-  if (
-    req.method === "PUT" &&
-    req.url &&
-    req.url.endsWith("/api/todos/update")
-  ) {
+const prisma = new PrismaClient();
+
+async function handler(req: Request, { params }: { params: { id: string } }) {
+  if (req.method === "DELETE") {
     try {
-      const {
-        title,
-        description,
-        due_date,
-        type,
-        id_user,
-        id_todo,
-      }: todoFormUpdate = await req.json();
-
       const session = await auth();
 
       if (!session) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
       }
+      const { id: id_todo } = params;
 
-      if (session.user?.id !== id_user) {
+      if (!id_todo) {
+        return NextResponse.json(
+          {
+            message: "Failed to Update a Todo ! id_todo cannot be null",
+          },
+          { status: 400 }
+        );
+      }
+
+      if (!session.user?.id) {
         return NextResponse.json({ message: "Forbidden" }, { status: 403 });
       }
-
-      if (!title || !type || !id_user || !id_todo) {
-        return NextResponse.json(
-          {
-            message: "Failed to Update a Todo ! Title or Type cannot be null",
-          },
-          { status: 400 }
-        );
-      }
-      if (type !== "TODO" && type !== "ONGOING" && type !== "DONE")
-        return NextResponse.json(
-          {
-            message:
-              "Failed to Update a Todo ! Type must be Todo, Ongoing or Done !",
-          },
-          { status: 400 }
-        );
-
-      const type_: Type = type as Type;
+      const id_user: string = session.user?.id;
       const user = await prisma.user.findUnique({
         where: { id_user },
       });
@@ -77,20 +56,14 @@ async function handler(req: Request) {
         return NextResponse.json({ message: "Forbidden" }, { status: 403 });
       }
 
-      const todo = await prisma.todo.update({
+      const todo = await prisma.todo.delete({
         where: { id_todo: old_todo.id_todo },
-        data: {
-          title,
-          description,
-          due_at: due_date,
-          type: type_,
-        },
       });
 
       if (!todo) {
         return NextResponse.json(
           {
-            message: "Failed To Update a Todo !",
+            message: "Failed To Delete a Todo !",
           },
           { status: 500 }
         );
@@ -98,7 +71,7 @@ async function handler(req: Request) {
       const response = NextResponse.json(
         {
           data: todo,
-          message: "Todo updated successfully",
+          message: "Todo Deleted successfully",
         },
         { status: 201 }
       );
@@ -108,7 +81,7 @@ async function handler(req: Request) {
       console.error(error);
 
       return NextResponse.json(
-        { message: "Failed to Update a todo !" },
+        { message: "Failed to Delete a todo !" },
         { status: 500 }
       );
     }
@@ -117,4 +90,4 @@ async function handler(req: Request) {
   }
 }
 
-export { handler as PUT };
+export { handler as DELETE };

@@ -1,4 +1,5 @@
 "use client";
+
 import React, {
   createContext,
   useContext,
@@ -17,7 +18,7 @@ type GlobalContextType = {
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
-export const GlobalProvider = ({ children }: { children: ReactNode }) => {
+export default function GlobalProvider ({ children }: { children: ReactNode }){
   const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
 
