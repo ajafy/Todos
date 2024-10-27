@@ -39,7 +39,7 @@ This command will build and run the application using Docker.
 
 ### Logging In
 
-Once the application is running, you can log in using the local credentials. The credentials might be stored in `.env.local` or provided during setup.
+Once the application is running, you can log in using the local credentials.
 
 ## Features
 
